@@ -1,16 +1,24 @@
 #Dani
 class Player(GameSprite):
+    def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
+        sprite.Sprite.__init__(self)
+        self.image = transform.scale(image.load(player_image), (player_width, player_height))
+        self.rect = self.image.get_rect()
+        self.rect.x = player_x
+        self.speed = player_speed
+        self.rect.y = player_y
+        self.direction_x = randint(-2, 2)
+        self.speed_x = 0.05
+        
     def update(self):
         keys = key.get_pressed()
         if keys[K_LEFT] and self.rect.x > 5:
             self.rect.x -= self.speed
         if keys[K_RIGHT] and self.rect.x < win_width - 60:
             self.rect.x += self.speed
-        global xplayer
-        xplayer = self.rect.x
 
     def fire(self):
-        if not len(bullets) >= 20:
+        if not len(bullets) >= 2:
             bullet = Bullet(img_bullet, self.rect.centerx, self.rect.top, 5, 20, 40)
             bullets.add(bullet)
 
@@ -19,28 +27,8 @@ class Player(GameSprite):
         extra_lives.add(vida)
 
 class Enemy(GameSprite):
-    def update(self):
-        if self.rect.y > win_height:
-            self.rect.y = 0
-            self.rect.x = randint(50, win_width - 50)
-            global lives
-            lives -= 1
-        else:
-            self.rect.y += self.speed
-            self.rect.x += self.direction_x
-
-            if randint(0,500) < 5:
-                self.direction_x *= -1
-
-            if self.rect.x < 0:
-                self.rect.x = 0
-            elif self.rect.x > win_width - 50:
-                self.rect.x = win_width - 50
-    
-    def attack(self):
-        if not len(attacks) >= 5:
-            attack = Bomb(img_bomb, self.rect.centerx, self.rect.top, 8, 40, 40)
-            attacks.add(attack)
+    #def update(self):
+        
 
 class Bomb(GameSprite):
     def update(self):

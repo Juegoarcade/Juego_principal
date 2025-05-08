@@ -9,6 +9,9 @@ class Player(GameSprite):
         self.rect.y = player_y
         self.direction_x = randint(-2, 2)
         self.speed_x = 0.05
+        self.width = player_width
+        self.height = player_height
+        
         
     def update(self):
         keys = key.get_pressed()
@@ -22,25 +25,11 @@ class Player(GameSprite):
             bullet = Bullet(img_bullet, self.rect.centerx, self.rect.top, 5, 20, 40)
             bullets.add(bullet)
 
-    def life(self):
-        vida = Life('Vida.png',randint(80, win_width - 80),0,3,80,80)
-        extra_lives.add(vida)
-
 class Enemy(GameSprite):
-    #def update(self):
+    def update(self):
+        if self.rect.x < (win_width - self.width):
+            if
         
-
-class Bomb(GameSprite):
-    def update(self):
-        self.rect.y += self.speed
-        if self.rect.y >= win_height:
-            self.kill()
-
-class Life(GameSprite):
-    def update(self):
-        self.rect.y += self.speed
-        if self.rect.y >= win_height:
-            self.kill()
 
 class Bullet(GameSprite):
     def update(self):

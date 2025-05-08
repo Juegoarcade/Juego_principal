@@ -8,7 +8,6 @@ Vidas animadas
 
 
 
-
 EXTRA
 Estrella
 
@@ -23,3 +22,37 @@ While run:
 
 Iker:
 Demas
+
+
+
+TAREAS:
+- IMAGENES Y MODULOS ✓
+- CLASE PERSONAJE
+    | INIT
+    | RESET
+- CLASE PLAYER
+    | UPDATE
+    #| DISPARO
+    | SALTO
+
+- CLASE ENEMY
+    | UPDATE
+
+- CLASE BALAS
+    | UPDATE
+
+  
+- WHILE RUN:
+
+
+
+
+
+
+
+
+
+
+
+
+  

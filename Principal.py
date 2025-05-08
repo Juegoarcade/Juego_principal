@@ -11,3 +11,5 @@ mario ="mr.jpg"
 princesa = "p.jpg"
 estrella = "str.png"
 
+win_width = 1000
+win_height = 700

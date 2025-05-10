@@ -26,12 +26,49 @@ class Player(GameSprite):
             bullets.add(bullet)
 
 class Enemy(GameSprite):
+
+    def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
+        sprite.Sprite.__init__(self)
+        self.image = transform.scale(image.load(player_image), (player_width, player_height))
+        self.rect = self.image.get_rect()
+        self.rect.x = player_x
+        self.speed = player_speed
+        self.rect.y = player_y
+        self.direction_x = randint(-2, 2)
+        self.speed_x = 0.05
+        self.width = player_width
+        self.height = player_height
+    
     def update(self):
         if self.rect.x < (win_width - self.width):
-            if
-        
+            if randint(0, 1) == 0:
+                self.rect.x += self.speed
+                if randint(0, 1) == 0:
+                    self.rect.x -= self.speed
+                else:
+                    self.rect.y += self.speed
+            else:
+                self.rect.y -= self.speed
+        else:
+            self.rect.x -= self.speed
 
+        
+            
+            
 class Bullet(GameSprite):
+
+    def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
+        sprite.Sprite.__init__(self)
+        self.image = transform.scale(image.load(player_image), (player_width, player_height))
+        self.rect = self.image.get_rect()
+        self.rect.x = player_x
+        self.speed = player_speed
+        self.rect.y = player_y
+        self.direction_x = randint(-2, 2)
+        self.speed_x = 0.05
+        self.width = player_width
+        self.height = player_height
+
     def update(self):
         if self.rect.y < 0:
             self.kill()

@@ -119,6 +119,7 @@ class Bullet():
 
 
 
+
 mario = Player(mario, 100, 100, 70, 40)
 princesa = Player(princesa, 30, 100, 70, 40)
 bowser = Enemy(bowser, 200, 100, 70, 40)

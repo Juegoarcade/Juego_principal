@@ -38,16 +38,25 @@ class Player():
         if self.x_speed > 0:
             for p in platforms_touched:
                 self.rect.right = min(self.rect.right, p.rect.left)
-        
-        if self.y_speed > 0: # bajando
+        elif self.x_speed < 0:
+            for p in platforms_touched:
+                self.rect.left = min(self.rect.left, p.rect.right)
+        self.gravitate()
+        self.rect.y += self.y_speed
+        if self.y_speed > 0: 
             for p in platforms_touched:
                 self.y_speed = 0
                 if p.rect.top < self.rect.bottom:
                     self.rect.bottom = p.rect.top
                     self.stands_on = p
+        elif self.y_speed < 0: 
+            self.stand_on = False
+            for p in platforms_touched:
+                self.y_speed = 0
+                self.rect.top = max(self.rect.top, p.rect.bottom)
 
     def gravitate(self):
-        self.y_speed += 0.25
+        self.y_speed += 0.5
 
     def jump(self, y):
         if self.stands_on:

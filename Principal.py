@@ -10,6 +10,7 @@ mario_arma = "mrp.png"
 mario ="mr.jpg"
 princesa = "p.jpg"
 estrella = "str.png"
+fondo_general = "fn.jpg"
 
 win_width = 1000
 win_height = 700

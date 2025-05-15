@@ -146,9 +146,9 @@ while run == true:
                   mario.jump(-7)
 
      # Actualización de los objetos del juego
-     player.update()
-     enemy.update()
-     bullets.update() # Actualiza la posición de todas las balas en el grupo
+     mario.update()
+     bowser.update()
+     bala_disparo.update() # Actualiza la posición de todas las balas en el grupo
 
      # Detección de colisiones (ejemplo básico)
      for bullet in bullets:

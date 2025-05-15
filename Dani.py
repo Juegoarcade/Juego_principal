@@ -10,14 +10,23 @@ class Player():
         self.speed_x = 0.05
         self.width = player_width
         self.height = player_height
-        
+        self.stands_on = False
         
     def update(self):
-        keys = key.get_pressed()
-        if keys[K_LEFT] and self.rect.x > 5:
-            self.rect.x -= self.speed
-        if keys[K_RIGHT] and self.rect.x < win_width - 60:
-            self.rect.x += self.speed
+        self.rect.x += self.x_speed
+        platforms_touched = pygame.sprite.spritecollide(self, barriers, False)
+        if self.x_speed > 0:
+            for p in platforms_touched:
+                self.rect.right = min(self.rect.right, p.rect.left)
+
+    def gravitate(self):
+        self.y_speed += 0.25
+
+    def jump(self, y):
+        if self.stands_on:
+            self.y_speed = y
+        
+
 
     def fire(self):
         if not len(bullets) >= 2:

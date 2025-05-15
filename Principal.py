@@ -20,14 +20,15 @@ win_width = 1000
 win_height = 700
 
 class Player():
-    def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
+    def __init__(self, player_image, player_x, player_y, player_height, player_width):
         self.image = transform.scale(image.load(player_image), (player_width, player_height))
         self.rect = self.image.get_rect()
         self.rect.x = player_x
         self.speed = player_speed
         self.rect.y = player_y
         self.direction_x = randint(-2, 2)
-        self.speed_x = 0.05
+        self.x_speed = 0
+        self.y_speed = 0
         self.width = player_width
         self.height = player_height
         self.stands_on = False
@@ -64,12 +65,12 @@ class Player():
         
     def fire(self):
         if not len(bullets) >= 2:
-            bullet = Bullet(img_bullet, self.rect.centerx, self.rect.top, 5, 20, 40)
+            bullet = Bullet(bala_disparo, self.rect.centerx, self.rect.top, 5, 20, 40)
             bullets.add(bullet)
 
 class Enemy():
 
-    def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
+    def __init__(self, player_image, player_x, player_y, player_height, player_width):
         self.image = transform.scale(image.load(player_image), (player_width, player_height))
         self.rect = self.image.get_rect()
         self.rect.x = player_x
@@ -116,8 +117,18 @@ class Bullet():
             self.rect.y -= self.speed
 
 
-run = True
 
+
+mario = Player(mario, 100, 100, 70, 40)
+princesa = Player(princesa, 30, 100, 70, 40)
+bowser = Enemy(bowser, 200, 100, 70, 40)
+
+
+
+run = true
+
+while run == true:
+  
  # Bucle principal del juego
  while run:
      # Manejo de eventos
@@ -125,8 +136,14 @@ run = True
          if event.type == pygame.QUIT:
              run = False # Si el usuario cierra la ventana, termina el bucle
          elif event.type == pygame.KEYDOWN:
-             if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE:
                  player.fire() # Si se presiona la barra espaciadora, el jugador dispara
+            elif event.key == pygame.K_LEFT:
+                  mario.x_speed = -5
+            elif event.key == pygame.K_RIGHT:
+                  mario.x_speed = 5
+            elif event.key == pygame.K_UP:
+                  mario.jump(-7)
 
      # Actualización de los objetos del juego
      player.update()

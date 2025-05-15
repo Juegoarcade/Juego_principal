@@ -148,6 +148,15 @@ run = True
      # Actualiza la pantalla para mostrar los cambios
      pygame.display.flip()
 
+    if event.type == pygame.KEYDOWN:
+        if event.key == pygame.K_LEFT:
+            mario.x_speed = -5
+        elif event.key == pygame.K_RIGHT:
+            mario.x_speed = 5
+    elif event.key == pygame.K_UP:
+            mario.jump(-7)
+
+
  # Finaliza Pygame
  pygame.quit()
  sys.exit()

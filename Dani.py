@@ -1,7 +1,6 @@
 #Dani
-class Player(GameSprite):
+class Player():
     def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
-        sprite.Sprite.__init__(self)
         self.image = transform.scale(image.load(player_image), (player_width, player_height))
         self.rect = self.image.get_rect()
         self.rect.x = player_x
@@ -25,10 +24,9 @@ class Player(GameSprite):
             bullet = Bullet(img_bullet, self.rect.centerx, self.rect.top, 5, 20, 40)
             bullets.add(bullet)
 
-class Enemy(GameSprite):
+class Enemy():
 
     def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
-        sprite.Sprite.__init__(self)
         self.image = transform.scale(image.load(player_image), (player_width, player_height))
         self.rect = self.image.get_rect()
         self.rect.x = player_x
@@ -55,10 +53,9 @@ class Enemy(GameSprite):
         
             
             
-class Bullet(GameSprite):
+class Bullet():
 
     def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
-        sprite.Sprite.__init__(self)
         self.image = transform.scale(image.load(player_image), (player_width, player_height))
         self.rect = self.image.get_rect()
         self.rect.x = player_x

@@ -156,22 +156,13 @@ while run == true:
              bullets.remove(bullet) # Elimina la bala
              # Aquí podrías añadir lógica para la salud del enemigo, puntuación, etc.
 
-     # Dibujo de los elementos en la pantalla
-     screen.fill((0, 0, 0)) # Fondo negro (puedes cambiar el color)
-     screen.blit(player.image, player.rect) # Dibuja al jugador
-     screen.blit(enemy.image, enemy.rect) # Dibuja al enemigo
-     bullets.draw(screen) # Dibuja todas las balas del grupo
 
+
+     
      # Actualiza la pantalla para mostrar los cambios
      pygame.display.flip()
 
-    if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_LEFT:
-            mario.x_speed = -5
-        elif event.key == pygame.K_RIGHT:
-            mario.x_speed = 5
-    elif event.key == pygame.K_UP:
-            mario.jump(-7)
+
 
 
  # Finaliza Pygame

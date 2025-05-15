@@ -23,4 +23,10 @@ win_height = 700
 run = true
 
 while run == true:
-  if 
+  if event.type == pygame.KEYDOWN:
+    if event.key == pygame.K_LEFT:
+      mario.x_speed = -5
+    elif event.key == pygame.K_RIGHT:
+      mario.x_speed = 5
+    elif event.key == pygame.K_UP:
+      mario.jump(-7)

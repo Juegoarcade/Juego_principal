@@ -116,13 +116,38 @@ class Bullet():
             self.rect.y -= self.speed
 
 
-run = true
+run = True
 
-while run == true:
-  if event.type == pygame.KEYDOWN:
-    if event.key == pygame.K_LEFT:
-      mario.x_speed = -5
-    elif event.key == pygame.K_RIGHT:
-      mario.x_speed = 5
-    elif event.key == pygame.K_UP:
-      mario.jump(-7)
+ # Bucle principal del juego
+ while run:
+     # Manejo de eventos
+     for event in pygame.event.get():
+         if event.type == pygame.QUIT:
+             run = False # Si el usuario cierra la ventana, termina el bucle
+         elif event.type == pygame.KEYDOWN:
+             if event.key == pygame.K_SPACE:
+                 player.fire() # Si se presiona la barra espaciadora, el jugador dispara
+
+     # Actualización de los objetos del juego
+     player.update()
+     enemy.update()
+     bullets.update() # Actualiza la posición de todas las balas en el grupo
+
+     # Detección de colisiones (ejemplo básico)
+     for bullet in bullets:
+         if sprite.collide_rect(bullet, enemy):
+             bullets.remove(bullet) # Elimina la bala
+             # Aquí podrías añadir lógica para la salud del enemigo, puntuación, etc.
+
+     # Dibujo de los elementos en la pantalla
+     screen.fill((0, 0, 0)) # Fondo negro (puedes cambiar el color)
+     screen.blit(player.image, player.rect) # Dibuja al jugador
+     screen.blit(enemy.image, enemy.rect) # Dibuja al enemigo
+     bullets.draw(screen) # Dibuja todas las balas del grupo
+
+     # Actualiza la pantalla para mostrar los cambios
+     pygame.display.flip()
+
+ # Finaliza Pygame
+ pygame.quit()
+ sys.exit()

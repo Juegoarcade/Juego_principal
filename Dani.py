@@ -18,6 +18,13 @@ class Player():
         if self.x_speed > 0:
             for p in platforms_touched:
                 self.rect.right = min(self.rect.right, p.rect.left)
+        
+        if self.y_speed > 0: # bajando
+            for p in platforms_touched:
+                self.y_speed = 0
+                if p.rect.top < self.rect.bottom:
+                    self.rect.bottom = p.rect.top
+                    self.stands_on = p
 
     def gravitate(self):
         self.y_speed += 0.25
@@ -26,8 +33,6 @@ class Player():
         if self.stands_on:
             self.y_speed = y
         
-
-
     def fire(self):
         if not len(bullets) >= 2:
             bullet = Bullet(img_bullet, self.rect.centerx, self.rect.top, 5, 20, 40)

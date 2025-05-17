@@ -1,4 +1,3 @@
-# Funciones importadas
 import pygame
 from pygame import transform, image, sprite
 from random import randint
@@ -11,7 +10,7 @@ bowser = "bw.jpg"
 llave = "ll.png"
 mario_arma = "mrp.png"
 mario_img = "mr.jpg"
-princesa = "p.jpg"  # Corregido el nombre del archivo
+princesa = "pp.jpg"  # Corregido el nombre del archivo
 estrella = "str.png"
 fondo_general = "fn.jpg"
 fondo_victoria = "fv.jpeg"
@@ -76,7 +75,7 @@ class Player(sprite.Sprite):
         platforms_touched = pygame.sprite.spritecollide(self, barriers, False)
         if self.y_speed >= 0:  # Cambiado a >= para mayor tolerancia
             for p in platforms_touched:
-                if p.rect.top < self.rect.bottom and self.y_speed > 0: # Añadida condición self.y_speed > 0
+                if p.rect.top < self.rect.bottom and self.y_speed > 0:  # Añadida condición self.y_speed > 0
                     self.rect.bottom = p.rect.top
                     self.y_speed = 0
                     self.stands_on = p
@@ -85,7 +84,7 @@ class Player(sprite.Sprite):
             for p in platforms_touched:
                 self.y_speed = 0
                 self.rect.top = max(self.rect.top, p.rect.bottom)
-                self.stands_on = False # Importante para que no se quede pegado al techo
+                self.stands_on = False  # Importante para que no se quede pegado al techo
 
         # Si no está en ninguna plataforma, no está "stands_on"
         if not platforms_touched:
@@ -102,7 +101,7 @@ class Player(sprite.Sprite):
     def fire(self):
         if len(bullets) < 2:
             bullet = Bullet(
-                bala_disparo, self.rect.centerx, self.rect.top, 10, 5, 20
+                bala_disparo, self.rect.centerx, self.rect.top, 10, 10, 20
             )
             bullets.add(bullet)
 
@@ -159,13 +158,13 @@ class Bullet(sprite.Sprite):
         self.speed = player_speed
         self.rect.y = player_y
         self.direction_x = randint(-2, 2)
-        self.speed_x = 0.05
+        self.x_speed = 0.05
         self.width = player_width
         self.height = player_height
 
     def update(self):
-        self.rect.y -= self.speed
-        if self.rect.bottom < 0:
+        self.rect.x += self.speed
+        if self.rect.x > (win_width - self.width):
             self.kill()
 
 
@@ -173,6 +172,7 @@ class Bullet(sprite.Sprite):
 mario = Player(mario_img, 100, win_height - 100, 70, 40)
 princesa = Player(princesa, 30, 100, 70, 40)
 bowser = Enemy(bowser, 700, win_height - 100, 70, 40)
+
 
 # Create some platforms for testing
 class Platform(sprite.Sprite):
@@ -189,9 +189,10 @@ platform1 = Platform(0, win_height - 30, win_width, 30)
 platform2 = Platform(200, win_height - 150, 150, 20)
 platform3 = Platform(500, win_height - 250, 100, 20)
 
-barriers.add(platform1)
-barriers.add(platform2)
-barriers.add(platform3)
+# Correct way to add sprites to the group
+barriers.add(platform1, platform2, platform3)
+enemy_group = sprite.Group()
+enemy_group.add(bowser)
 
 run = True
 
@@ -222,11 +223,9 @@ while run:
     bowser.update()
     bullets.update()
 
-    # Collision detection
-    for bullet in bullets:
-        if sprite.collide_rect(bullet, bowser):
-            bullets.remove(bullet)
-            # Add logic for enemy health, score, etc. here
+    if sprite.groupcollide(bullets, enemy_group, False, False):
+        bullets.empty()
+        bowser.kill()
 
     # Draw everything
     fondo = image.load(fondo_general).convert()

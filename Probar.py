@@ -17,7 +17,7 @@ win_height = 700
 player_speed = 5
 gravity = 0.5
 
-screen = display.set_mode((win_width, win_height))
+window = display.set_mode((win_width, win_height))
 display.set_caption("Mario's Adventure")
 
 barriers = sprite.Group()
@@ -94,7 +94,7 @@ class Player(sprite.Sprite):
             bullets.add(bullet)
     
     def reset(self):
-        screen.blit(self.image, (self.rect.x, self.rect.y))
+        window.blit(self.image, (self.rect.x, self.rect.y))
 
 
 class Enemy(sprite.Sprite):
@@ -126,7 +126,7 @@ class Enemy(sprite.Sprite):
             self.direction_x = 1
             self.rect.x += self.speed * self.direction_x
     def reset(self):
-        screen.blit(self.image, (self.rect.x, self.rect.y))
+        window.blit(self.image, (self.rect.x, self.rect.y))
 
 
 class Bullet(sprite.Sprite):
@@ -196,9 +196,9 @@ while run:
 
 
     
-    screen.blit(fondo, (0, 0))
-    barriers.draw(screen)
+    window.blit(fondo, (0, 0))
+    barriers.draw(window)
     bowser.reset()
     mario.reset() 
-    bullets.draw(screen)
+    bullets.draw(window)
     display.update()

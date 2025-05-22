@@ -25,34 +25,16 @@ while run = true:
 
 
 
-llave_sprite = pygame.sprite.Sprite()
-llave_sprite.image = transform.scale(image.load(llave), (40, 40))
-llave_sprite.rect = llave_sprite.image.get_rect(topleft=(1800, 360))
-
-estrella_sprite = pygame.sprite.Sprite()
-estrella_sprite.image = transform.scale(image.load(estrella), (40, 40))
-estrella_sprite.rect = estrella_sprite.image.get_rect(topleft=(600, 400))
 
 
 
-tiene_llave = False
+ for bullet in bullets:
+        for enemy in enemies:
+            if bullet.rect.colliderect(enemy.rect):
+                bullet.kill()
+                enemy.health -= 1
+                if enemy.health <= 0:
+                    enemies.remove(enemy)
 
 
 
-if mario.rect.colliderect(llave_sprite.rect):
-        tiene_llave = True
-
-    if tiene_llave:
-        screen.blit(princesa.image, (princesa.rect.x - camera_x, princesa.rect.y))
-
-    if tiene_llave and mario.rect.colliderect(princesa.rect):
-        screen.blit(transform.scale(image.load(fondo_victoria), (win_width, win_height)), (0, 0))
-        pygame.display.flip()
-        pygame.time.delay(3000)
-        run = False
-        continue
-
-    screen.blit(estrella_sprite.image, (estrella_sprite.rect.x - camera_x, estrella_sprite.rect.y))
-
-    if mario.rect.colliderect(estrella_sprite.rect):
-        tiene_estrella = True  # O cualquier lógica que quieras para la estrella

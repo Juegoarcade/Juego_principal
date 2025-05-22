@@ -37,4 +37,13 @@ while run = true:
                     enemies.remove(enemy)
 
 
+def update(self):
+        self.rect.x += self.speed
+        if self.rect.right < 0 or self.rect.left > world_limit:
+            self.kill()
+        for platform in barriers:
+            if self.rect.colliderect(platform.rect):
+                self.kill()
+
+
 

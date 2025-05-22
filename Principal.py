@@ -1,144 +1,165 @@
-# Funciones importadas
-from pygame import *
-import pygame
-import sys
-from random import randint
+# Código completo con bloques en lugar de plataformas
 
-# Rutas de imágenes
-bala_enemigo = "bl.png"
+from random import randint
+from pygame import *
+
+# --- Assets ---
 bala_disparo = "bl2.png"
+bala_enemigo = "bl.png"
 bowser_img = "bw.jpg"
-llave = "ll.png"
-mario_arma = "mrp.png"
+llave_img = "ll.png"
 mario_img = "mr.jpg"
 princesa_img = "pp.jpg"
-estrella = "str.png"
 fondo_general = "fn.jpg"
 fondo_victoria = "fv.jpeg"
 fondo_derrota = "fd.jpeg"
+castillo_img = "castle.png"
+bloque = "bloque.jpg"
 
-# Configuración de pantalla
+# --- Music ---
+mixer.init()
+mixer_music.load("musica_fondo.mp3")
+mixer_music.play(-1)
+
+m_victoria = mixer.Sound("victoria.mp3")
+m_derrota = mixer.Sound("derrota.mp3")
+
+# --- Game Settings ---
 win_width = 1000
 win_height = 700
 player_speed = 5
-world_limit = 2800  # límite del mundo para la cámara
+gravity = 0.5
+jump_power = -10
+left_bound = 300
+right_bound = 700
+shift = 0
+tecla_e = False
 
-# Inicialización
-pygame.init()
-screen = pygame.display.set_mode((win_width, win_height))
-pygame.display.set_caption("Mario Adventure")
-clock = pygame.time.Clock()
+# --- Window ---
+window = display.set_mode((win_width, win_height))
+display.set_caption("Mario's Adventure")
 
-# Clase Plataforma
-class Platform(pygame.sprite.Sprite):
-    def __init__(self, x, y, width, height, color=(150, 75, 0)):
+# --- Groups ---
+barriers = sprite.Group()
+bullets = sprite.Group()
+enemy_bullets = sprite.Group()
+bala_disparo_princesa = sprite.Group()
+all_sprites = sprite.Group()
+
+# --- Flags ---
+has_key = False
+princesa_libre = False
+derrota = False
+victory = False
+
+# --- Classes ---
+class Player(sprite.Sprite):
+    def __init__(self, image_path, x, y, h, w):
         super().__init__()
-        self.image = Surface((width, height))
-        self.image.fill(color)
-        self.rect = self.image.get_rect(topleft=(x, y))
-
-# Clase Jugador
-class Player(pygame.sprite.Sprite):
-    def __init__(self, player_image, player_x, player_y, player_height, player_width):
-        super().__init__()
-        self.image = transform.scale(image.load(player_image), (player_width, player_height))
-        self.rect = self.image.get_rect()
-        self.rect.x = player_x
-        self.rect.y = player_y
+        self.image = transform.scale(image.load(image_path), (w, h))
+        self.rect = self.image.get_rect(x=x, y=y)
         self.x_speed = 0
         self.y_speed = 0
-        self.width = player_width
-        self.height = player_height
-        self.stands_on = False
-        self.facing_right = True
+        self.can_jump = True
+        self.on_ground = False
 
     def update(self):
-        if self.x_speed > 0:
-            self.facing_right = True
-        elif self.x_speed < 0:
-            self.facing_right = False
-
         self.rect.x += self.x_speed
-        platforms_touched = pygame.sprite.spritecollide(self, barriers, False)
-        for p in platforms_touched:
+        platforms_hit = sprite.spritecollide(self, barriers, False)
+        for p in platforms_hit:
             if self.x_speed > 0:
                 self.rect.right = p.rect.left
             elif self.x_speed < 0:
                 self.rect.left = p.rect.right
-
-        self.gravitate()
+        self.y_speed += gravity
         self.rect.y += self.y_speed
-        platforms_touched = pygame.sprite.spritecollide(self, barriers, False)
-        self.stands_on = False
-        for p in platforms_touched:
+        platforms_hit = sprite.spritecollide(self, barriers, False)
+        self.on_ground = False
+        for p in platforms_hit:
             if self.y_speed > 0:
                 self.rect.bottom = p.rect.top
                 self.y_speed = 0
-                self.stands_on = True
+                self.can_jump = True
+                self.on_ground = True
             elif self.y_speed < 0:
                 self.rect.top = p.rect.bottom
                 self.y_speed = 0
 
-    def gravitate(self):
-        self.y_speed += 0.5
-
-    def jump(self, y):
-        if self.stands_on:
-            self.y_speed = y
+    def jump(self, jump_power):
+        if self.can_jump:
+            self.y_speed = jump_power
+            self.can_jump = False
 
     def fire(self):
-        if len(bullets) < 5:
-            direction = 1 if self.facing_right else -1
-            bullet = Bullet(bala_disparo, self.rect.centerx, self.rect.centery, direction * 10, 10, 20)
-            bullets.add(bullet)
+        bullet = Bullet(bala_disparo, self.rect.centerx, self.rect.centery, 10, 20, 20)
+        bullets.add(bullet)
 
-# Clase Enemigo
-class Enemy(pygame.sprite.Sprite):
-    def __init__(self, player_image, player_x, player_y, player_height, player_width):
+    def reset(self):
+        window.blit(self.image, (self.rect.x, self.rect.y))
+
+class Enemy(sprite.Sprite):
+    def __init__(self, img, x, y, h, w, can_shoot=False):
         super().__init__()
-        self.image = transform.scale(image.load(player_image), (player_width, player_height))
-        self.rect = self.image.get_rect()
-        self.rect.x = player_x
-        self.rect.y = player_y
-        self.health = 5
+        self.image = transform.scale(image.load(img), (w, h))
+        self.rect = self.image.get_rect(x=x, y=y)
+        self.can_shoot = can_shoot
+        self.shoot_cooldown = 1
 
     def update(self):
-        pass
+        if self.can_shoot:
+            self.shoot_cooldown -= 1
+            if self.shoot_cooldown <= 0:
+                self.shoot()
+                self.shoot_cooldown = 270
 
-# Clase Bala
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, player_image, player_x, player_y, player_speed, player_height, player_width):
+    def shoot(self):
+        bullet = EnemyBullet(bala_enemigo, self.rect.left, self.rect.top - 10, -3, 70, 40)
+        enemy_bullets.add(bullet)
+
+class Bullet(sprite.Sprite):
+    def __init__(self, img, x, y, speed, h, w):
         super().__init__()
-        self.image = transform.scale(image.load(player_image), (player_width, player_height))
-        self.rect = self.image.get_rect()
-        self.rect.x = player_x
-        self.speed = player_speed
-        self.rect.y = player_y
+        self.image = transform.scale(image.load(img), (w, h))
+        self.rect = self.image.get_rect(x=x, y=y)
+        self.speed = speed
 
     def update(self):
         self.rect.x += self.speed
-        if self.rect.right < 0 or self.rect.left > world_limit:
+        if self.rect.x > win_width:
             self.kill()
-        for platform in barriers:
-            if self.rect.colliderect(platform.rect):
-                self.kill()
 
-# Instancias de personajes
-mario = Player(mario_img, 100, 100, 70, 40)
-princesa = Player(princesa_img, 2300, 400, 70, 40)
-bowser = Enemy(bowser_img, 500, 610, 120, 90)
-bowser2 = Enemy(bowser_img, 1750, 390, 120, 90)
+class EnemyBullet(sprite.Sprite):
+    def __init__(self, img, x, y, speed, h, w):
+        super().__init__()
+        self.image = transform.scale(image.load(img), (w, h))
+        self.rect = self.image.get_rect(x=x, y=y)
+        self.speed = speed
 
-# Grupos
-bullets = pygame.sprite.Group()
-barriers = pygame.sprite.Group()
-enemies = pygame.sprite.Group()
-enemies.add(bowser, bowser2)
+    def update(self):
+        self.rect.x += self.speed
+        if self.rect.right < 0:
+            self.kill()
 
-# Plataformas
+class Platform(sprite.Sprite):
+    def __init__(self, x, y, w, h):
+        super().__init__()
+        self.image = transform.scale(image.load(bloque), (w, h))
+        self.rect = self.image.get_rect(x=x, y=y)
+
+class Key(sprite.Sprite):
+    def __init__(self, path, x, y, w, h):
+        super().__init__()
+        self.image = transform.scale(image.load(path), (w, h))
+        self.rect = self.image.get_rect(x=x, y=y)
+
+# --- World Setup ---
+ground = Platform(0, win_height - 60, 8000, 60)
+ground.image.set_alpha(0)
+barriers.add(ground)
+
 platform_data = [
-    (0, 680, 3000, 20),
-    (100, 600, 300, 20), (450, 600, 150, 20), (650, 600, 150, 20),
+    #(100, 600, 300, 20), 
+    (450, 600, 150, 20), (650, 600, 150, 20),
     (500, 450, 200, 20), (750, 450, 150, 20), (950, 450, 150, 20),
     (300, 300, 150, 20), (500, 300, 150, 20), (700, 300, 150, 20),
     (900, 300, 150, 20), (1100, 300, 150, 20),
@@ -151,106 +172,149 @@ platform_data = [
     (1000, 200, 20, 100), (1300, 200, 20, 100), (1600, 200, 20, 100),
     (1900, 200, 20, 100), (2200, 200, 20, 100)
 ]
-
 for x, y, w, h in platform_data:
     barriers.add(Platform(x, y, w, h))
 
-# Llave y estrella
-llave_sprite = pygame.sprite.Sprite()
-llave_sprite.image = transform.scale(image.load(llave), (40, 40))
-llave_sprite.rect = llave_sprite.image.get_rect(topleft=(1800, 360))
+key = Key(llave_img, 1200, win_height - 680, 40, 40)
+mario = Player(mario_img, 100, win_height - 150, 70, 40)
+princesa = Player(princesa_img, 2000, win_height - 130 , 50, 40)
+bowser = Enemy(bowser_img, 2400, win_height - 130 , 70, 40, can_shoot=True)
 
-estrella_sprite = pygame.sprite.Sprite()
-estrella_sprite.image = transform.scale(image.load(estrella), (40, 40))
-estrella_sprite.rect = estrella_sprite.image.get_rect(topleft=(600, 400))
 
-# Fondo
-background = transform.scale(image.load(fondo_general), (3000, win_height))
 
-# Estados del juego
-tiene_llave = False
-camera_x = 0
+
+
+
+# --- CASTILLO ---
+castillo = sprite.Sprite()
+castillo.image = transform.scale(image.load(castillo_img), (400, 400))
+castillo.rect = castillo.image.get_rect(x=2200, y=win_height - 470)
+all_sprites.add(castillo)
+
+all_sprites.add(mario, princesa, bowser, key)
+all_sprites.add(*barriers)
+enemy_group = sprite.Group(bowser)
+
+# --- Game Loop ---
 run = True
-
-# Bucle principal
 while run:
-    clock.tick(60)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+    time.delay(10)
+    for e in event.get():
+        if e.type == QUIT:
             run = False
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+        elif e.type == KEYDOWN:
+            if e.key == K_SPACE:
                 mario.fire()
-            elif event.key == pygame.K_LEFT:
+            elif e.key == K_LEFT or e.key == K_a:
                 mario.x_speed = -player_speed
-            elif event.key == pygame.K_RIGHT:
+            elif e.key == K_RIGHT or e.key == K_d:
                 mario.x_speed = player_speed
-            elif event.key == pygame.K_UP:
-                mario.jump(-11)
-        elif event.type == pygame.KEYUP:
-            if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+            elif e.key == K_UP or e.key == K_w:
+                mario.jump(-14)
+            elif e.key == K_e:  # Detectamos cuando presionamos la tecla E
+                tecla_e = True
+        elif e.type == KEYUP:
+            if e.key in (K_LEFT, K_RIGHT, K_a, K_d):
                 mario.x_speed = 0
+            elif e.key == K_e:  # Detectamos cuando dejamos de presionar E
+                tecla_e = False
+
+
+    # Desplazamiento con límites y suavizado
+    if mario.rect.x > right_bound and mario.x_speed > 0 or mario.rect.x < left_bound and mario.x_speed < 0:
+        if mario.x_speed > 0:
+            shift -= mario.x_speed - 2
+        else:
+            shift -= mario.x_speed + 2
+
+        for obj in all_sprites:
+            if obj != mario:
+                obj.rect.x -= mario.x_speed - 2
+        for obj in bullets:
+            obj.rect.x -= mario.x_speed - 2
+        for obj in enemy_bullets:
+            obj.rect.x -= mario.x_speed - 2
+        for obj in barriers:
+            obj.rect.x -= mario.x_speed - 2
+        for obj in enemy_group:
+            obj.rect.x -= mario.x_speed - 2
+        
+    if mario.rect.x > right_bound:
+        mario.rect.x = right_bound
+    elif mario.rect.x < left_bound:
+        mario.rect.x = left_bound
 
     mario.update()
+    enemy_group.update()
     bullets.update()
-    enemies.update()
-
-    if mario.rect.centerx - camera_x > win_width - 300 and camera_x < world_limit - win_width:
-        camera_x += player_speed
-    elif mario.rect.centerx - camera_x < 300 and camera_x > 0:
-        camera_x -= player_speed
-
-    screen.blit(background, (-camera_x, 0))
-    for platform in barriers:
-        screen.blit(platform.image, (platform.rect.x - camera_x, platform.rect.y))
-    for enemy in enemies:
-        screen.blit(enemy.image, (enemy.rect.x - camera_x, enemy.rect.y))
-
-    screen.blit(mario.image, (mario.rect.x - camera_x, mario.rect.y))
-    if tiene_llave:
-        screen.blit(princesa.image, (princesa.rect.x - camera_x, princesa.rect.y))
-    screen.blit(llave_sprite.image, (llave_sprite.rect.x - camera_x, llave_sprite.rect.y))
-    screen.blit(estrella_sprite.image, (estrella_sprite.rect.x - camera_x, estrella_sprite.rect.y))
-    for bullet in bullets:
-        screen.blit(bullet.image, (bullet.rect.x - camera_x, bullet.rect.y))
+    enemy_bullets.update()
 
     for bullet in bullets:
-        for enemy in enemies:
-            if bullet.rect.colliderect(enemy.rect):
-                bullet.kill()
-                enemy.health -= 1
-                if enemy.health <= 0:
-                    enemies.remove(enemy)
+        if sprite.collide_rect(bullet, bowser):
+            bullet.kill()
+            bowser.kill()
+            enemy_group.remove(bowser)
 
-    if mario.rect.colliderect(llave_sprite.rect):
-        tiene_llave = True
+    fondo_img = transform.scale(image.load(fondo_general), (win_width, win_height))
+    local_shift = shift % win_width
+    window.blit(fondo_img, (local_shift, 0))
+    if local_shift != 0:
+        window.blit(fondo_img, (local_shift - win_width, 0))
 
-    if tiene_llave:
-        screen.blit(princesa.image, (princesa.rect.x - camera_x, princesa.rect.y))
 
-    if tiene_llave and mario.rect.colliderect(princesa.rect):
-        screen.blit(transform.scale(image.load(fondo_victoria), (win_width, win_height)), (0, 0))
-        pygame.display.flip()
-        pygame.time.delay(3000)
+
+    if sprite.collide_rect(mario, key):
+        key.kill()
+        has_key = True
+   
+        # Si Mario toca cualquier parte de la jaula, esta desaparece
+    if has_key and sprite.collide_rect(mario, princesa):
+        princesa_libre = True
+
+          
+
+
+    if princesa_libre:
+        princesa.rect.x += mario.x_speed
+        
+        if princesa.rect.x > right_bound - 60:
+            princesa.rect.x = right_bound - 60
+        elif princesa.rect.x < left_bound + 60:
+            princesa.rect.x = left_bound + 60
+
+    if sprite.spritecollideany(mario, enemy_group) or sprite.spritecollideany(mario, enemy_bullets) or mario.rect.y > win_height:
+        mixer_music.stop()
+        mixer.Sound.play(m_derrota)
+        while mixer.get_busy():
+            time.delay(100)
+        derrota = True
+
+    if princesa_libre and abs(mario.rect.centerx - castillo.rect.centerx) < 10:
+        mixer_music.stop()
+        mixer.Sound.play(m_victoria)
+        while mixer.get_busy():
+            time.delay(100)
+        victory = True
+
+    window.blit(castillo.image, castillo.rect.topleft)
+    barriers.draw(window)
+    enemy_group.draw(window)
+    bullets.draw(window)
+    enemy_bullets.draw(window)
+    mario.reset()
+    princesa.reset()
+    all_sprites.draw(window)
+    display.update()
+
+    if victory:
+        win_img = transform.scale(image.load(fondo_victoria), (win_width, win_height))
+        window.blit(win_img, (0, 0))
+        display.update()
+        time.delay(3000)
         run = False
-        continue
-
-    screen.blit(estrella_sprite.image, (estrella_sprite.rect.x - camera_x, estrella_sprite.rect.y))
-
-    if mario.rect.colliderect(estrella_sprite.rect):
-        tiene_estrella = True  # O cualquier lógica que quieras para la estrella
-
-    for enemy in enemies:
-        if mario.rect.colliderect(enemy.rect):
-            screen.blit(transform.scale(image.load(fondo_derrota), (win_width, win_height)), (0, 0))
-            pygame.display.flip()
-            pygame.time.delay(3000)
-            run = False
-            continue
-
-    pygame.display.flip()
-
-# Cierre
-pygame.quit()
-sys.exit()
-
+    elif derrota:
+        lose_img = transform.scale(image.load(fondo_derrota), (win_width, win_height))
+        window.blit(lose_img, (0, 0))
+        display.update()
+        time.delay(2000)
+        run = False

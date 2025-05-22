@@ -195,7 +195,7 @@ keys.add(key)
 all_sprites.add(key) 
 mario = Player(mario_img, 100, win_height - 150, 70, 40)
 princesa = Player(princesa_img, 2000, win_height - 130 , 50, 40)
-bowser = Enemy(bowser_img, 2500, win_height - 230 , 140, 110, can_shoot=True)
+bowser = Enemy(bowser_img, 2500, win_height - 220 , 140, 110, can_shoot=True)
 
 
 
@@ -220,7 +220,7 @@ while run:
         if e.type == QUIT:
             run = False
         elif e.type == KEYDOWN:
-            if e.key == K_SPACE:
+            if e.key == K_SPACE and not princesa_libre:
                 mario.fire()
             elif e.key == K_LEFT or e.key == K_a:
                 mario.x_speed = -player_speed

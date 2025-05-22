@@ -44,6 +44,7 @@ barriers = sprite.Group()
 bullets = sprite.Group()
 enemy_bullets = sprite.Group()
 bala_disparo_princesa = sprite.Group()
+keys = sprite.Group()
 all_sprites = sprite.Group()
 
 # --- Flags ---
@@ -104,6 +105,7 @@ class Enemy(sprite.Sprite):
         self.rect = self.image.get_rect(x=x, y=y)
         self.can_shoot = can_shoot
         self.shoot_cooldown = 1
+        self.health = 5
 
     def update(self):
         if self.can_shoot:
@@ -113,7 +115,10 @@ class Enemy(sprite.Sprite):
                 self.shoot_cooldown = 270
 
     def shoot(self):
-        bullet = EnemyBullet(bala_enemigo, self.rect.left, self.rect.top - 10, -3, 70, 40)
+        if randint(-1,1)>0:
+            bullet = EnemyBullet(bala_enemigo, self.rect.left, win_height - 140, -3, 40, 30)
+        else:
+            bullet = EnemyBullet(bala_enemigo, self.rect.left, 280, -3, 40, 30)    
         enemy_bullets.add(bullet)
 
 class Bullet(sprite.Sprite):
@@ -125,8 +130,11 @@ class Bullet(sprite.Sprite):
 
     def update(self):
         self.rect.x += self.speed
-        if self.rect.x > win_width:
+        if self.rect.right < 0 or self.rect.left > win_width:
             self.kill()
+        for platform in barriers:
+            if self.rect.colliderect(platform.rect):
+                self.kill()
 
 class EnemyBullet(sprite.Sprite):
     def __init__(self, img, x, y, speed, h, w):
@@ -158,27 +166,36 @@ ground.image.set_alpha(0)
 barriers.add(ground)
 
 platform_data = [
-    #(100, 600, 300, 20), 
-    (450, 600, 150, 20), (650, 600, 150, 20),
-    (500, 450, 200, 20), (750, 450, 150, 20), (950, 450, 150, 20),
-    (300, 300, 150, 20), (500, 300, 150, 20), (700, 300, 150, 20),
-    (900, 300, 150, 20), (1100, 300, 150, 20),
-    (900, 550, 200, 20), (1100, 400, 150, 20), (1300, 600, 200, 20),
-    (1500, 300, 150, 20), (1700, 450, 150, 20), (1900, 400, 200, 20),
-    (2100, 350, 100, 20), (2300, 500, 200, 20), (2500, 400, 200, 20),
-    (2700, 300, 100, 20),
-    (800, 580, 20, 100), (1200, 580, 20, 100), (1600, 580, 20, 100),
-    (2000, 580, 20, 100), (2400, 580, 20, 100), (2800, 580, 20, 100),
-    (1000, 200, 20, 100), (1300, 200, 20, 100), (1600, 200, 20, 100),
-    (1900, 200, 20, 100), (2200, 200, 20, 100)
+    (500, 530, 200, 20),  # bajo1
+    (750, 530, 150, 20),  # bajo2
+    (950, 530, 150, 20),  # bajo3
+    (700, 410, 150, 20),  # medio1
+    (900, 380, 150, 20),  # medio2
+    (1100, 380, 150, 20), # medio3
+    (1100, 480, 150, 20), # bajo4
+    (1500, 380, 150, 20), # medio4
+    (1700, 530, 150, 20), # bajo5
+    (1900, 480, 200, 20), # bajo6
+    #(2100, 430, 100, 20), # bajo7
+    #(2500, 480, 200, 20), # bajo8
+    (2700, 380, 100, 20), # medio5
+    (700, 410, 20, 100), # muro0
+    (1000, 280, 20, 100), # muro1
+    (1265, 280, 20, 100), # muro2
+    (1200, 400, 20, 80), # muro3
+    (1600, 280, 20, 100), # muro4
+    (1900, 280, 20, 100), # muro5
+    (2200, 250, 20, 100), # muro6
 ]
 for x, y, w, h in platform_data:
     barriers.add(Platform(x, y, w, h))
 
-key = Key(llave_img, 1200, win_height - 680, 40, 40)
+key = Key(llave_img, 1200, win_height - 460, 40, 40)
+keys.add(key)
+all_sprites.add(key) 
 mario = Player(mario_img, 100, win_height - 150, 70, 40)
 princesa = Player(princesa_img, 2000, win_height - 130 , 50, 40)
-bowser = Enemy(bowser_img, 2400, win_height - 130 , 70, 40, can_shoot=True)
+bowser = Enemy(bowser_img, 2500, win_height - 230 , 140, 110, can_shoot=True)
 
 
 
@@ -191,7 +208,7 @@ castillo.image = transform.scale(image.load(castillo_img), (400, 400))
 castillo.rect = castillo.image.get_rect(x=2200, y=win_height - 470)
 all_sprites.add(castillo)
 
-all_sprites.add(mario, princesa, bowser, key)
+all_sprites.add(mario, princesa, bowser)
 all_sprites.add(*barriers)
 enemy_group = sprite.Group(bowser)
 
@@ -210,7 +227,7 @@ while run:
             elif e.key == K_RIGHT or e.key == K_d:
                 mario.x_speed = player_speed
             elif e.key == K_UP or e.key == K_w:
-                mario.jump(-14)
+                mario.jump(-11.5)
             elif e.key == K_e:  # Detectamos cuando presionamos la tecla E
                 tecla_e = True
         elif e.type == KEYUP:
@@ -239,21 +256,27 @@ while run:
         for obj in enemy_group:
             obj.rect.x -= mario.x_speed - 2
         
+        key.rect.x -= mario.x_speed - 2
+        
     if mario.rect.x > right_bound:
         mario.rect.x = right_bound
     elif mario.rect.x < left_bound:
         mario.rect.x = left_bound
+
+    for bullet in bullets:
+        for enemy in enemy_group:
+            if bullet.rect.colliderect(enemy.rect):
+                bullet.kill()
+                bowser.health -= 1
+                if bowser.health <= 0:
+                    enemy_group.remove(bowser)
+                    bowser.kill()
 
     mario.update()
     enemy_group.update()
     bullets.update()
     enemy_bullets.update()
 
-    for bullet in bullets:
-        if sprite.collide_rect(bullet, bowser):
-            bullet.kill()
-            bowser.kill()
-            enemy_group.remove(bowser)
 
     fondo_img = transform.scale(image.load(fondo_general), (win_width, win_height))
     local_shift = shift % win_width
@@ -263,7 +286,7 @@ while run:
 
 
 
-    if sprite.collide_rect(mario, key):
+    if sprite.spritecollideany(mario, keys):
         key.kill()
         has_key = True
    
@@ -276,6 +299,8 @@ while run:
 
     if princesa_libre:
         princesa.rect.x += mario.x_speed
+        princesa.rect.y = mario.rect.y
+
         
         if princesa.rect.x > right_bound - 60:
             princesa.rect.x = right_bound - 60
@@ -302,6 +327,7 @@ while run:
     bullets.draw(window)
     enemy_bullets.draw(window)
     mario.reset()
+    keys.draw(window)
     princesa.reset()
     all_sprites.draw(window)
     display.update()
